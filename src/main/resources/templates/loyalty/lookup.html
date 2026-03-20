@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Tra cuu diem tich luy</title>
+    <link rel="stylesheet" href="/css/custom.css">
+</head>
+<body>
+<section layout:fragment="content" class="container mt-3">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h1 class="mb-2">Tra Cuu Diem Tich Luy</h1>
+                    <p class="text-muted">Trang nay chi danh cho tai khoan USER. Nhap so dien thoai 10 chu so de xem diem.</p>
+
+                    <div class="mb-3">
+                        <label for="customerPhone" class="form-label">Số điện thoại</label>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <input id="customerPhone" type="text" class="form-control" maxlength="10" placeholder="VD: 0901234567">
+                            <button id="lookupBtn" type="button" class="btn btn-primary">Tra cứu</button>
+                            <button id="requestOtpBtn" type="button" class="btn btn-warning">Lấy OTP đổi voucher</button>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 d-flex gap-2 align-items-center">
+                        <select id="otpChannel" class="form-select" style="max-width: 180px;">
+                            <option value="phone">Nhận qua sdt</option>
+                            <option value="email">Nhận qua email</option>
+                        </select>
+                        <input id="otpEmail" type="email" class="form-control" placeholder="Nhập email nhận OTP" style="display: none; min-width: 220px;">
+                    </div>
+
+                    <div class="mb-3 d-flex gap-2">
+                        <input id="otpCode" type="text" class="form-control" maxlength="6" placeholder="Nhập OTP 6 chữ số">
+                        <button id="redeemBtn" type="button" class="btn btn-success">Xác nhận đổi voucher</button>
+                    </div>
+
+                    <small class="text-muted d-block mb-3">Lưu ý: Hệ thống tính điểm theo số điện thoại đã dùng khi đặt hàng. Mỗi voucher đổi từ 20 điểm, giảm 50.000 đ cho đơn từ 300.000 đ. OTP hiệu lực 3 phút.</small>
+
+                    <div id="loyaltyResult" class="alert alert-info" style="display: none; margin-top: 8px;"></div>
+
+                    <h5 class="mt-3">Voucher khả dụng</h5>
+                    <div id="voucherList" class="voucher-list text-muted">Chưa có dữ liệu.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            const input = document.getElementById('customerPhone');
+            const button = document.getElementById('lookupBtn');
+            const requestOtpButton = document.getElementById('requestOtpBtn');
+            const redeemButton = document.getElementById('redeemBtn');
+            const otpInput = document.getElementById('otpCode');
+            const otpChannel = document.getElementById('otpChannel');
+            const otpEmail = document.getElementById('otpEmail');
+            const result = document.getElementById('loyaltyResult');
+            const voucherList = document.getElementById('voucherList');
+
+            const showResult = (message, isError) => {
+                result.style.display = 'block';
+                result.textContent = message;
+                result.className = isError ? 'alert alert-danger' : 'alert alert-success';
+            };
+
+            const validatePhone = () => {
+                const phone = (input.value || '').trim();
+                if (!/^\d{10}$/.test(phone)) {
+                    showResult('So dien thoai phai gom dung 10 chu so.', true);
+                    return null;
+                }
+                return phone;
+            };
+
+            const renderVouchers = (vouchers) => {
+                if (!Array.isArray(vouchers) || vouchers.length === 0) {
+                    voucherList.textContent = 'Không có voucher khả dụng.';
+                    return;
+                }
+                voucherList.innerHTML = vouchers.map(function (v) {
+                    return '<div class="voucher-item">'
+                        + '<div>'
+                        + '<strong>' + v.code + '</strong>'
+                        + '<div class="meta">Giảm ' + Number(v.discountAmount || 0).toLocaleString('vi-VN') + ' đ'
+                        + ' • Đơn tối thiểu ' + Number(v.minOrderValue || 0).toLocaleString('vi-VN') + ' đ'
+                        + ' • Hết hạn: ' + (v.expiresAt || '') + '</div>'
+                        + '</div>'
+                        + '<div class="text-end"><button class="btn btn-sm btn-outline-primary" onclick="useVoucher(\'' + (v.code || '') + '\')">Sử dụng</button></div>'
+                        + '</div>';
+                }).join('');
+            };
+
+            const loadVouchers = async (phone) => {
+                try {
+                    const response = await fetch('/loyalty/vouchers?customerPhone=' + encodeURIComponent(phone));
+                    if (!response.ok) {
+                        voucherList.textContent = 'Khong the tai danh sach voucher.';
+                        return;
+                    }
+                    const vouchers = await response.json();
+                    renderVouchers(vouchers);
+                } catch (error) {
+                    voucherList.textContent = 'Loi ket noi khi tai voucher.';
+                }
+            };
+
+            const lookup = async () => {
+                const phone = validatePhone();
+                if (!phone) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/loyalty/points?customerPhone=' + encodeURIComponent(phone));
+                    if (!response.ok) {
+                        showResult('Khong the tra cuu diem luc nay.', true);
+                        return;
+                    }
+                    const data = await response.json();
+                    const points = Number(data.points || 0);
+                    showResult('So dien thoai ' + phone + ' hien co ' + points + ' diem tich luy.', false);
+                    await loadVouchers(phone);
+                } catch (error) {
+                    showResult('Loi ket noi. Vui long thu lai.', true);
+                }
+            };
+
+            const redeem = async () => {
+                const phone = validatePhone();
+                if (!phone) {
+                    return;
+                }
+
+                const otp = (otpInput.value || '').trim();
+                if (!/^\d{6}$/.test(otp)) {
+                    showResult('Vui long nhap OTP gom 6 chu so.', true);
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/loyalty/redeem/confirm?customerPhone=' + encodeURIComponent(phone) + '&otp=' + encodeURIComponent(otp), {
+                        method: 'POST'
+                    });
+
+                    const data = await response.json();
+                    if (!response.ok || !data.success) {
+                        showResult(data.message || 'Khong doi duoc voucher.', true);
+                        return;
+                    }
+
+                    showResult('Doi voucher thanh cong: ' + data.code + '. Con lai ' + data.remainingPoints + ' diem.', false);
+                    otpInput.value = '';
+                    await loadVouchers(phone);
+                } catch (error) {
+                    showResult('Loi ket noi khi doi voucher.', true);
+                }
+            };
+
+            const requestOtp = async () => {
+                const phone = validatePhone();
+                if (!phone) {
+                    return;
+                }
+
+                const channel = (otpChannel.value || 'phone').trim();
+                const email = (otpEmail.value || '').trim();
+                if (channel === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                    showResult('Vui long nhap email hop le de nhan OTP.', true);
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/loyalty/redeem/request-otp?customerPhone=' + encodeURIComponent(phone)
+                        + '&channel=' + encodeURIComponent(channel)
+                        + '&email=' + encodeURIComponent(email), {
+                        method: 'POST'
+                    });
+                    const data = await response.json();
+                    if (!response.ok || !data.success) {
+                        showResult(data.message || 'Khong gui duoc OTP.', true);
+                        return;
+                    }
+
+                    let message = data.message || 'Da gui OTP thanh cong.';
+                    if (data.demoOtp) {
+                        message += ' OTP demo: ' + data.demoOtp;
+                    }
+                    showResult(message, false);
+                } catch (error) {
+                    showResult('Loi ket noi khi gui OTP.', true);
+                }
+            };
+
+            // Khi người dùng chọn sử dụng voucher -> chuyển sang trang checkout với mã voucher
+            window.useVoucher = function (code) {
+                const phone = (input.value || '').trim();
+                const customerPhone = encodeURIComponent(phone);
+                const voucherCode = encodeURIComponent(code || '');
+                window.location.href = '/order/checkout?customerPhone=' + customerPhone + '&voucherCode=' + voucherCode;
+            };
+
+            const toggleChannelFields = () => {
+                const channel = (otpChannel.value || 'phone').trim();
+                if (channel === 'email') {
+                    otpEmail.style.display = 'block';
+                } else {
+                    otpEmail.style.display = 'none';
+                    otpEmail.value = '';
+                }
+            };
+
+            button.addEventListener('click', lookup);
+            requestOtpButton.addEventListener('click', requestOtp);
+            redeemButton.addEventListener('click', redeem);
+            otpChannel.addEventListener('change', toggleChannelFields);
+            input.addEventListener('keydown', function (event) {
+                if (event.key === 'Enter') {
+                    event.preventDefault();
+                    lookup();
+                }
+            });
+            toggleChannelFields();
+        })();
+    </script>
+</section>
+</body>
+</html>

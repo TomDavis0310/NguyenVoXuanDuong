@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+    layout:decorate="~{layout}">
+
+<head>
+    <title th:text="${title} ?: 'Product Management'">Product Management</title>
+</head>
+
+<body>
+    <section layout:fragment="content">
+        <div class="crud-section">
+            <div class="crud-header">
+                <h1>Products List</h1>
+                <div th:if="${selectedCategoryName != null}" style="margin-top: 8px; font-size: 14px; color: #333;">
+                    Đang lọc theo danh mục:
+                    <strong th:text="${selectedCategoryName}"></strong>
+                    <a th:href="@{/products}" class="btn btn-link" style="margin-left: 8px; padding: 0;">Xóa lọc</a>
+                </div>
+            </div>
+
+            <div sec:authorize="hasAnyAuthority('ADMIN','MANAGER')">
+                <a th:href="@{/products/add}" class="btn btn-primary" style="margin-bottom: 20px;">Add New Product</a>
+            </div>
+
+            <!-- Promotional Products Section -->
+            <div th:if="${#lists.size(products.?[promotional == true])} > 0" class="promotion-section">
+                <div class="promotion-section__header">
+                    <h2 class="promotion-section__title">🔥 Sản Phẩm Khuyến Mãi</h2>
+                    <div class="promotion-section__tag">HOT</div>
+                </div>
+
+                <div class="products-grid">
+                    <div class="product-card" th:each="product : ${products.?[promotional == true]}">
+                        <div class="product-card__badge">KHUYẾN MÃI</div>
+                        <a th:href="@{/products/{id}(id=${product.id})}" class="product-card__link">
+                        <div class="product-card__img-wrapper">
+                            <img th:if="${product.image != null and product.image != ''}"
+                                 th:src="@{${product.image}}"
+                                 class="product-card__img"
+                                 alt="Product Image"
+                                 style="max-width:200px; max-height:200px; object-fit:cover;">
+                            <img th:unless="${product.image != null and product.image != ''}"
+                                 src="https://placehold.co/200x200?text=No+Image"
+                                 class="product-card__img"
+                                 alt="Product Image"
+                                 style="max-width:200px; max-height:200px; object-fit:cover;">
+                        </div>
+                        </a>
+                        <a th:href="@{/products/{id}(id=${product.id})}" class="product-card__link">
+                            <h3 class="product-card__title" th:text="${product.name}"></h3>
+                        </a>
+                        <span class="product-card__price"
+                            th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+                        <span th:if="${product.promotionalPrice != null and product.promotionalPrice > 0}"
+                            style="font-size: 12px; color: #d0021b; display: block; margin-bottom: 5px;"
+                            th:text="'Giá KM: ' + ${#numbers.formatDecimal(product.promotionalPrice, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+                        <span style="font-size: 12px; color: #d0021b; display: block; margin-bottom: 5px;"
+                            th:text="'SL khuyến mãi còn: ' + ${product.promotionalStock}"></span>
+                        <span style="font-size: 12px; color: #666; display: block; margin-bottom: 5px;"
+                            th:text="${product.category?.name}"></span>
+
+                        <div style="display: flex; gap: 5px; margin-top: 10px;" sec:authorize="hasAnyAuthority('ADMIN','MANAGER')">
+                            <a th:href="@{/products/edit/{id}(id=${product.id})}" class="btn btn-success"
+                                style="font-size: 11px; padding: 4px 8px; flex: 1; text-align: center;">Edit</a>
+                            <a th:href="@{/products/delete/{id}(id=${product.id})}" class="btn btn-danger"
+                                style="font-size: 11px; padding: 4px 8px; flex: 1; text-align: center;"
+                                onclick="return confirm('Are you sure?')">Delete</a>
+                        </div>
+                        <form th:action="@{/cart/add}" method="post" style="margin-top: 5px;">
+                            <input type="hidden" name="quantity" value="1">
+                            <input type="hidden" th:value="${product.id}" name="productId" />
+                            <button type="submit" class="btn btn-warning" style="width: 100%; font-size: 12px;">Add to
+                                Cart</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Regular Products Section -->
+            <div th:if="${#lists.size(products.?[promotional == false])} > 0" style="margin-top: 30px;">
+                <h2 style="margin-bottom: 15px; color: #333;">Tất Cả Sản Phẩm</h2>
+                <div class="products-grid">
+                    <div class="product-card" th:each="product : ${products.?[promotional == false]}">
+                        <a th:href="@{/products/{id}(id=${product.id})}" class="product-card__link">
+                        <div class="product-card__img-wrapper">
+                            <img th:if="${product.image != null and product.image != ''}"
+                                 th:src="@{${product.image}}"
+                                 class="product-card__img"
+                                 alt="Product Image"
+                                 style="max-width:200px; max-height:200px; object-fit:cover;">
+                            <img th:unless="${product.image != null and product.image != ''}"
+                                 src="https://placehold.co/200x200?text=No+Image"
+                                 class="product-card__img"
+                                 alt="Product Image"
+                                 style="max-width:200px; max-height:200px; object-fit:cover;">
+                        </div>
+                        </a>
+                        <a th:href="@{/products/{id}(id=${product.id})}" class="product-card__link">
+                            <h3 class="product-card__title" th:text="${product.name}"></h3>
+                        </a>
+                        <span class="product-card__price"
+                            th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+                        <span th:if="${product.promotionalPrice != null and product.promotionalPrice > 0}"
+                            style="font-size: 12px; color: #d0021b; display: block; margin-bottom: 5px;"
+                            th:text="'Giá KM: ' + ${#numbers.formatDecimal(product.promotionalPrice, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span>
+                        <span style="font-size: 12px; color: #d0021b; display: block; margin-bottom: 5px;"
+                            th:text="'SL khuyến mãi còn: ' + ${product.promotionalStock}"></span>
+                        <span style="font-size: 12px; color: #666; display: block; margin-bottom: 5px;"
+                            th:text="${product.category?.name}"></span>
+
+                        <div style="display: flex; gap: 5px; margin-top: 10px;" sec:authorize="hasAnyAuthority('ADMIN','MANAGER')">
+                            <a th:href="@{/products/edit/{id}(id=${product.id})}" class="btn btn-success"
+                                style="font-size: 11px; padding: 4px 8px; flex: 1; text-align: center;">Edit</a>
+                            <a th:href="@{/products/delete/{id}(id=${product.id})}" class="btn btn-danger"
+                                style="font-size: 11px; padding: 4px 8px; flex: 1; text-align: center;"
+                                onclick="return confirm('Are you sure?')">Delete</a>
+                        </div>
+                        <form th:action="@{/cart/add}" method="post" style="margin-top: 5px;">
+                            <input type="hidden" name="quantity" value="1">
+                            <input type="hidden" th:value="${product.id}" name="productId" />
+                            <button type="submit" class="btn btn-warning" style="width: 100%; font-size: 12px;">Add to
+                                Cart</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+
+</html>

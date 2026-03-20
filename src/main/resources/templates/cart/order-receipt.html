@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+layout:decorate="~{layout}">
+<head>
+ <title>Biên lai đơn hàng</title>
+</head>
+<body>
+<section layout:fragment="content" class="container mt-3">
+ <h1>Biên Lai Đơn Hàng</h1>
+ <div class="crud-section" th:if="${order != null}">
+  <p><strong>Mã đơn:</strong> <span th:text="${order.id}"></span></p>
+  <p><strong>Khách hàng:</strong> <span th:text="${order.customerName}"></span></p>
+    <p><strong>Số điện thoại:</strong> <span th:text="${order.customerPhone}"></span></p>
+  <p><strong>Phương thức:</strong> <span th:text="${order.paymentMethod}"></span></p>
+  <p><strong>Trạng thái:</strong> <span th:text="${order.paymentStatus}"></span></p>
+
+  <table class="table table-hover" style="margin-top: 12px;">
+   <thead>
+   <tr>
+    <th>Sản phẩm</th>
+    <th>SL</th>
+    <th>SL KM dùng</th>
+    <th>Đơn giá gốc</th>
+    <th>Thành tiền</th>
+   </tr>
+   </thead>
+   <tbody>
+   <tr th:each="detail : ${order.orderDetails}">
+    <td th:text="${detail.product.name}"></td>
+    <td th:text="${detail.quantity}"></td>
+    <td th:text="${detail.promotionalQuantityUsed}"></td>
+    <td th:text="${#numbers.formatDecimal(detail.unitPrice, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+    <td th:text="${#numbers.formatDecimal(detail.lineTotal, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+   </tr>
+   </tbody>
+  </table>
+
+  <hr>
+  <p><strong>Tổng tiền hàng:</strong> <span th:text="${#numbers.formatDecimal(order.subtotal, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span></p>
+  <p><strong>Giảm khuyến mãi:</strong> <span th:text="${#numbers.formatDecimal(order.promotionDiscount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span></p>
+  <p><strong>Giảm voucher:</strong> <span th:text="${#numbers.formatDecimal(order.voucherDiscount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span></p>
+  <p><strong>Mã voucher:</strong> <span th:text="${order.voucherCode == null || #strings.isEmpty(order.voucherCode) ? 'Khong dung' : order.voucherCode}"></span></p>
+  <p><strong>Giảm điểm:</strong> <span th:text="${#numbers.formatDecimal(order.pointsDiscount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span></p>
+  <p><strong>Phí ship:</strong> <span th:text="${#numbers.formatDecimal(order.shippingFee, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span></p>
+  <h3><strong>Tổng thanh toán:</strong> <span th:text="${#numbers.formatDecimal(order.finalTotal, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span></h3>
+
+  <div style="margin-top: 16px;">
+   <a th:href="@{/order/history(customerName=${order.customerName})}" class="btn btn-primary">Xem lịch sử mua hàng</a>
+   <a th:href="@{/products}" class="btn btn-link">Tiếp tục mua sắm</a>
+  </div>
+ </div>
+</section>
+</body>
+</html>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thegioididong.com - Điện thoại, Laptop, Phụ kiện, Đồng hồ chính hãng</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <!-- Sticky Side Banners -->
+    <div class="sticky-banner sticky-banner--left">
+        <a href="#"><img
+                th:src="@{https://cdnv2.tgdd.vn/mwg-static/tgdd/Banner/57/ce/57ce7cd2a7a892afd7f0e1826f9549fd.png}"
+                alt="Banner Trái"></a>
+    </div>
+    <div class="sticky-banner sticky-banner--right">
+        <a href="#"><img
+                th:src="@{https://cdnv2.tgdd.vn/mwg-static/tgdd/Banner/d8/ab/d8ab342d5f6f12580593ebc2adb9b663.png}"
+                alt="Banner Phải"></a>
+    </div>
+
+    <!-- Top Banner (Above Header) -->
+    <div class="top-banner">
+        <div class="container--fluid">
+            <a href="#"><img
+                    th:src="@{https://cdnv2.tgdd.vn/mwg-static/tgdd/Banner/25/28/2528971e6119a5d6b12f5e9b03c11131.png}"
+                    alt="Top Banner"></a>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <!-- Top Header: Logo, Search, User Actions -->
+            <div class="header__top">
+                <a href="/" class="header__logo">
+                    <img th:src="@{https://cdnv2.tgdd.vn/webmwg/2024/ContentMwg/images/lunar_new_year/2026/TGDD/logo-dt.png}"
+                        alt="The Gioi Di Dong" class="header__logo-img">
+                </a>
+
+                <div class="header__search">
+                    <input type="text" class="header__search-input" placeholder="Bạn tìm gì...">
+                    <button class="header__search-btn"><i class="fa-solid fa-magnifying-glass"></i></button>
+                </div>
+
+                <div class="header__actions">
+                    <div class="header__action-item" sec:authorize="hasAnyAuthority('ADMIN','MANAGER')">
+                        <a th:href="@{/products}">Quan ly<br>san pham</a>
+                    </div>
+                    <div class="header__action-item" sec:authorize="hasAuthority('USER')">
+                        <a th:href="@{/loyalty/lookup}">Tra cuu<br>diem</a>
+                    </div>
+                    <div class="header__action-item">
+                        <a th:href="@{/order/history}">Lịch sử<br>đơn hàng</a>
+                    </div>
+                    <div class="header__action-item">
+                        <a th:href="@{/cart}"><i class="fa-solid fa-cart-shopping"></i><br>Giỏ hàng</a>
+                    </div>
+                    <div class="header__action-item">
+                        <a th:href="@{/login}" sec:authorize="isAnonymous()">Dang nhap<br>Dang ky</a>
+                        <a th:href="@{/order/history}" sec:authorize="isAuthenticated()">
+                            Xin chao<br><span sec:authentication="name">User</span>
+                        </a>
+                    </div>
+                    <div class="header__action-item" sec:authorize="isAuthenticated()">
+                        <form th:action="@{/logout}" method="post">
+                            <button type="submit" class="header__logout-btn">Dang xuat</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Navigation -->
+            <nav class="main-menu">
+                <ul class="main-menu__list">
+                    <li class="main-menu__item" th:each="category : ${headerCategories}">
+                        <a th:href="@{/products(categoryId=${category.id})}" class="main-menu__link">
+                            <img th:if="${category.image != null and !#strings.isEmpty(category.image)}"
+                                th:src="${category.image}" th:alt="${category.name}" class="main-menu__icon-img">
+                            <i th:if="${category.image == null or #strings.isEmpty(category.image)}"
+                                class="fa-solid fa-layer-group"></i>
+                            <span th:text="${category.name}"></span>
+                        </a>
+                        <div class="main-menu__dropdown main-menu__dropdown--mega"
+                            th:if="${category.children != null and !#lists.isEmpty(category.children)}">
+                            <div class="main-menu__mega-grid main-menu__mega-grid--children">
+                                <div class="main-menu__mega-group" th:each="child : ${category.children}">
+                                    <a th:href="@{/products(categoryId=${child.id})}" class="main-menu__child-link">
+                                        <img th:if="${child.image != null and !#strings.isEmpty(child.image)}"
+                                            th:src="${child.image}" th:alt="${child.name}" class="main-menu__child-icon">
+                                        <i th:if="${child.image == null or #strings.isEmpty(child.image)}"
+                                            class="fa-solid fa-angle-right"></i>
+                                        <span th:text="${child.name}"></span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <!-- Dynamic Page Content -->
+            <div layout:fragment="content">
+                <!-- Content will be inserted here -->
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer__grid">
+                <div class="footer__column">
+                    <h4>Tổng đài hỗ trợ</h4>
+                    <ul>
+                        <li><a href="#">Gọi mua: 1900 232 460 (7:30 - 22:00)</a></li>
+                        <li><a href="#">Khiếu nại: 1800 1062 (8:00 - 21:30)</a></li>
+                        <li><a href="#">Bảo hành: 1900 232 464 (8:00 - 21:00)</a></li>
+                    </ul>
+                </div>
+                <div class="footer__column">
+                    <h4>Về công ty</h4>
+                    <ul>
+                        <li><a href="#">Giới thiệu công ty (MWG.vn)</a></li>
+                        <li><a href="#">Tuyển dụng</a></li>
+                        <li><a href="#">Gửi góp ý, khiếu nại</a></li>
+                    </ul>
+                </div>
+                <div class="footer__column">
+                    <h4>Thông tin khác</h4>
+                    <ul>
+                        <li><a href="#">Tìm siêu thị</a></li>
+                        <li><a href="#">Chính sách bảo hành</a></li>
+                        <li><a href="#">Mua trả góp</a></li>
+                    </ul>
+                </div>
+                <div class="footer__column">
+                    <h4>Kết nối với chúng tôi</h4>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script th:src="@{/js/script.js}"></script>
+</body>
+
+</html>

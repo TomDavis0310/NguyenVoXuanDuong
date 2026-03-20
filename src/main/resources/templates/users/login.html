@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dang nhap</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="auth-page">
+    <div class="auth-card">
+        <h1 class="auth-title">Dang nhap</h1>
+        <p class="auth-subtitle">Dang nhap de quan ly don hang va tai khoan cua ban</p>
+
+        <div class="auth-alert auth-alert--error" th:if="${param.error}">
+            Sai ten dang nhap hoac mat khau.
+        </div>
+        <div class="auth-alert auth-alert--success" th:if="${param.logout}">
+            Ban da dang xuat thanh cong.
+        </div>
+        <div class="auth-alert auth-alert--success" th:if="${param.registered}">
+            Dang ky thanh cong. Vui long dang nhap.
+        </div>
+
+        <form th:action="@{/login}" method="post" class="auth-form">
+            <label class="auth-label" for="username">Username</label>
+            <input id="username" type="text" name="username" class="auth-input" required autofocus>
+
+            <label class="auth-label" for="password">Password</label>
+            <input id="password" type="password" name="password" class="auth-input" required>
+
+            <label class="auth-remember">
+                <input type="checkbox" name="remember-me">
+                <span>Ghi nho dang nhap trong 24 gio</span>
+            </label>
+
+            <button type="submit" class="btn btn-primary auth-submit">Dang nhap</button>
+        </form>
+
+        <p class="auth-switch">
+            Chua co tai khoan?
+            <a th:href="@{/register}">Dang ky ngay</a>
+        </p>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout}">
+
+<head>
+    <title>Trang chủ - Thegioididong</title>
+</head>
+
+<body>
+    <div layout:fragment="content">
+        <!-- Big Banner Section -->
+        <section class="big-banner">
+            <div class="big-banner__top">
+                <a href="#">
+                    <img th:src="@{https://cdnv2.tgdd.vn/mwg-static/tgdd/Banner/f2/e7/f2e7548a58710c27a7e9e78e878a695e.jpg}"
+                         alt="Big Promotion" class="big-banner__img-top">
+                </a>
+            </div>
+            <div class="big-banner__bottom">
+                <a href="#" class="big-banner__item">
+                    <img th:src="@{https://cdnv2.tgdd.vn/mwg-static/tgdd/Banner/12/c6/12c60338494c1708fe45e8f602517800.jpg}"
+                         alt="Sub Banner 1">
+                </a>
+                <a href="#" class="big-banner__item">
+                    <img th:src="@{https://cdnv2.tgdd.vn/mwg-static/tgdd/Banner/b4/a2/b4a2e300d8e9a48aabafb85e7170b5de.jpg}"
+                         alt="Sub Banner 2">
+                </a>
+            </div>
+        </section>
+
+        <section class="quick-links">
+            <ul>
+                <li><a href="#"><img th:src="@{https://cdn.tgdd.vn/content/phonne-24x24.png}" alt="Điện thoại">Điện thoại</a></li>
+                <li><a href="#"><img th:src="@{https://cdn.tgdd.vn/content/laptop-24x24.png}" alt="Laptop">Laptop</a></li>
+                <li><a href="#"><img th:src="@{https://cdn.tgdd.vn/content/tablet-24x24.png}" alt="Tablet">Tablet</a></li>
+                <li><a href="#"><img th:src="@{https://cdn.tgdd.vn/content/phu-kien-24x24.png}" alt="Phụ kiện">Phụ kiện</a></li>
+                <li><a href="#"><img th:src="@{https://cdn.tgdd.vn/content/smartwatch-24x24.png}" alt="Smartwatch">Smartwatch</a></li>
+                <li><a href="#"><img th:src="@{https://cdn.tgdd.vn/content/watch-24x24.png}" alt="Đồng hồ">Đồng hồ</a></li>
+                <li><a href="#"><img th:src="@{https://cdn.tgdd.vn/content/may-cu-24x24.png}" alt="Máy cũ">Máy cũ</a></li>
+                <li><a href="#"><img th:src="@{https://cdn.tgdd.vn/content/PC-24x24.png}" alt="PC, Máy in">PC, Máy in</a></li>
+            </ul>
+        </section>
+
+        <section class="flash-sale">
+            <div class="flash-sale__header">
+                <h2 class="flash-sale__title">Giờ Vàng - Deal Sốc</h2>
+                <div class="flash-sale__countdown">
+                    <span>Kết thúc trong:</span>
+                    <span class="countdown-box">01</span> :
+                    <span class="countdown-box">59</span> :
+                    <span class="countdown-box">30</span>
+                </div>
+            </div>
+
+            <div class="flash-sale__list" th:if="${#lists.size(promotionalProducts)} > 0">
+                <div class="product-card" th:each="product : ${promotionalProducts}">
+                    <a th:href="@{/products/{id}(id=${product.id})}" class="product-card__link">
+                    <div class="product-card__img-wrapper">
+                        <img th:if="${product.image != null and product.image != ''}"
+                             th:src="@{${product.image}}"
+                             th:alt="${product.name}"
+                             class="product-card__img">
+                        <img th:unless="${product.image != null and product.image != ''}"
+                             src="https://placehold.co/240x240?text=No+Image"
+                             th:alt="${product.name}"
+                             class="product-card__img">
+                    </div>
+                    <h3 class="product-card__title" th:text="${product.name}"></h3>
+                    </a>
+                    <span class="product-card__price"
+                          th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')} + '₫'"></span>
+                </div>
+            </div>
+            <p th:if="${#lists.size(promotionalProducts)} == 0" style="color: #fff; padding: 8px 0;">Chưa có sản phẩm khuyến mãi.</p>
+        </section>
+
+        <section class="promotion-section" th:if="${#lists.size(normalProducts)} > 0" style="margin-top: 24px;">
+            <div class="promotion-section__header">
+                <h2 class="promotion-section__title">Tất Cả Sản Phẩm</h2>
+            </div>
+            <div class="products-grid">
+                <div class="product-card" th:each="product : ${normalProducts}">
+                    <a th:href="@{/products/{id}(id=${product.id})}" class="product-card__link">
+                    <div class="product-card__img-wrapper">
+                        <img th:if="${product.image != null and product.image != ''}"
+                             th:src="@{${product.image}}"
+                             th:alt="${product.name}"
+                             class="product-card__img">
+                        <img th:unless="${product.image != null and product.image != ''}"
+                             src="https://placehold.co/240x240?text=No+Image"
+                             th:alt="${product.name}"
+                             class="product-card__img">
+                    </div>
+                          <h3 class="product-card__title" th:text="${product.name}"></h3>
+                          </a>
+                    <span class="product-card__price"
+                          th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')} + '₫'"></span>
+                    <span style="font-size: 12px; color: #666; display: block; margin-bottom: 5px;"
+                          th:text="${product.category?.name}"></span>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+
+</html>

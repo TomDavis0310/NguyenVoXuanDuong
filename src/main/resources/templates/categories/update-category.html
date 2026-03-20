@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout}">
+
+<head>
+    <title>Update Category</title>
+</head>
+
+<body>
+    <section layout:fragment="content">
+        <div class="crud-section" style="max-width: 600px; margin: 0 auto; margin-top: 20px;">
+            <h1 class="crud-header">Cập Nhật Danh Mục</h1>
+            <form th:action="@{/categories/update/{id}(id=${category.id})}" th:object="${category}" method="post" enctype="multipart/form-data">
+                <div class="mb-3">
+                    <label for="name" class="form-label">Tên danh mục:</label>
+                    <input type="text" th:field="*{name}" class="form-control" id="name" required>
+                    <div class="text-danger" th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Tên là bắt buộc.
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="parentCategory" class="form-label">Danh mục cha:</label>
+                    <select id="parentCategory" th:field="*{parentCategory.id}" class="form-control">
+                        <option value="">-- Danh mục gốc (cấp 1) --</option>
+                        <option th:each="parent : ${parentCategories}" th:value="${parent.id}" th:text="${parent.name}"></option>
+                    </select>
+                    <small class="text-muted">Chọn danh mục cha nếu đây là category con (cấp 2).</small>
+                </div>
+
+                <div class="mb-3">
+                    <label for="icon" class="form-label">Icon (tuỳ chọn):</label>
+                    <input type="text" id="icon" th:field="*{icon}" class="form-control" placeholder="vd: fa-solid fa-mobile-screen">
+                </div>
+                
+                <div class="mb-3">
+                    <label for="imageFile" class="form-label">Hình ảnh danh mục:</label>
+                    <input type="file" name="imageFile" class="form-control" id="imageFile" accept="image/*">
+                    <small class="text-muted">Chấp nhận ảnh JPG, PNG, GIF. Để trống nếu không muốn thay đổi.</small>
+                    <div th:if="${category.image}" style="margin-top: 10px;">
+                        <img th:src="@{${category.image}}" alt="Category Image" style="max-width: 150px; border-radius: 8px;">
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <button type="submit" class="btn btn-primary">Cập nhật</button>
+                    <a th:href="@{/categories}" class="btn btn-link">Hủy bỏ</a>
+                </div>
+            </form>
+        </div>
+    </section>
+</body>
+
+</html>

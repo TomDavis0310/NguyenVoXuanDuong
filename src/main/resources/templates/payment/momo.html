@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+layout:decorate="~{layout}">
+<head>
+ <title>MoMo Payment</title>
+ <link rel="stylesheet"
+href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+<section layout:fragment="content" class="container mt-3">
+ <h1>Thanh Toán MoMo</h1>
+ <div class="alert alert-info">Đây là luồng MoMo mô phỏng để demo nghiệp vụ. Đơn hàng chỉ được lưu khi bấm xác nhận thành công.</div>
+
+ <div class="card mb-3">
+  <div class="card-header">Thông tin thanh toán</div>
+  <div class="card-body">
+   <p><strong>Khách hàng:</strong> <span th:text="${customerName}"></span></p>
+   <p><strong>Tổng tiền hàng:</strong> <span th:text="${#numbers.formatDecimal(summary.subtotal, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span></p>
+   <p><strong>Giảm KM:</strong> <span th:text="${#numbers.formatDecimal(summary.promotionDiscount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span></p>
+   <p><strong>Giảm điểm:</strong> <span th:text="${#numbers.formatDecimal(summary.pointsDiscount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span></p>
+   <p><strong>Phí ship:</strong> <span th:text="${#numbers.formatDecimal(summary.shippingFee, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span></p>
+   <h4><strong>Số tiền cần thanh toán:</strong> <span th:text="${#numbers.formatDecimal(summary.finalTotal, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span></h4>
+  </div>
+ </div>
+
+ <form th:action="@{/payment/momo/success}" method="post" style="display: inline-block; margin-right: 8px;">
+  <button type="submit" class="btn btn-success">Xác Nhận Thanh Toán Thành Công</button>
+ </form>
+ <a th:href="@{/payment/momo/cancel}" class="btn btn-outline-secondary">Hủy Thanh Toán</a>
+</section>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dang ky</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="auth-page">
+    <div class="auth-card">
+        <h1 class="auth-title">Dang ky tai khoan</h1>
+        <p class="auth-subtitle">Tao tai khoan moi de dat hang nhanh hon</p>
+
+        <ul class="auth-errors" th:if="${errors != null and !#lists.isEmpty(errors)}">
+            <li th:each="error : ${errors}" th:text="${error}"></li>
+        </ul>
+
+        <form th:action="@{/register}" th:object="${user}" method="post" class="auth-form">
+            <label class="auth-label" for="username">Username</label>
+            <input id="username" type="text" th:field="*{username}" class="auth-input" required maxlength="50">
+
+            <label class="auth-label" for="email">Email</label>
+            <input id="email" type="email" th:field="*{email}" class="auth-input" required maxlength="50">
+
+            <label class="auth-label" for="phone">So dien thoai (khong bat buoc)</label>
+            <input id="phone" type="text" th:field="*{phone}" class="auth-input" maxlength="10" pattern="[0-9]{10}">
+            <small class="text-muted">Neu nhap, vui long nhap dung 10 chu so.</small>
+
+            <label class="auth-label" for="password">Password</label>
+            <input id="password" type="password" th:field="*{password}" class="auth-input" required>
+
+            <button type="submit" class="btn btn-primary auth-submit">Dang ky</button>
+        </form>
+
+        <p class="auth-switch">
+            Da co tai khoan?
+            <a th:href="@{/login}">Dang nhap</a>
+        </p>
+    </div>
+</div>
+</body>
+</html>

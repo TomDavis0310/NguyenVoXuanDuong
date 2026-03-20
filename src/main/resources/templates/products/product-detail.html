@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+
+<head>
+    <title th:text="${product.name} + ' - Chi tiết sản phẩm'">Chi tiết sản phẩm</title>
+</head>
+
+<body>
+<section layout:fragment="content">
+    <div class="crud-section">
+        <a th:href="@{/products}" class="btn btn-link" style="padding-left: 0;">← Quay lại danh sách sản phẩm</a>
+
+        <div style="display: grid; grid-template-columns: minmax(220px, 320px) 1fr; gap: 24px; align-items: start; margin-top: 12px;">
+            <div class="product-detail__img-box">
+                <img th:if="${product.image != null and product.image != ''}"
+                     th:src="@{${product.image}}"
+                     th:alt="${product.name}"
+                     class="product-detail__img">
+                <img th:unless="${product.image != null and product.image != ''}"
+                     src="https://placehold.co/420x420?text=No+Image"
+                     th:alt="${product.name}"
+                     class="product-detail__img">
+            </div>
+
+            <div>
+                <h1 style="margin-bottom: 10px;" th:text="${product.name}"></h1>
+                <div style="font-size: 24px; font-weight: 700; color: #d0021b; margin-bottom: 8px;"
+                     th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')} + ' đ'"></div>
+
+                <div th:if="${product.promotional == true and product.promotionalPrice != null and product.promotionalPrice > 0}"
+                     class="alert alert-warning" style="margin-bottom: 10px;">
+                    Giá khuyến mãi: <strong th:text="${#numbers.formatDecimal(product.promotionalPrice, 0, 'COMMA', 0, 'POINT')} + ' đ'"></strong>
+                    <br>
+                    Số lượng khuyến mãi còn lại: <strong th:text="${product.promotionalStock}"></strong>
+                </div>
+
+                <div style="margin-bottom: 8px; color: #555;">
+                    Danh mục: <strong th:text="${product.category?.name}"></strong>
+                </div>
+
+                <div style="margin-bottom: 16px; white-space: pre-line;" th:text="${product.description}"></div>
+
+                <form th:action="@{/cart/add}" method="post" style="display: flex; gap: 8px; align-items: center; max-width: 360px;">
+                    <input type="hidden" th:value="${product.id}" name="productId"/>
+                    <input type="number" name="quantity" min="1" value="1" class="form-control" style="margin-bottom: 0; width: 110px;">
+                    <button type="submit" class="btn btn-warning" style="flex: 1;">Thêm vào giỏ</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+
+</html>

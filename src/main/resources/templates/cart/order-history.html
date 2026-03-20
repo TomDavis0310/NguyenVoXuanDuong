@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+layout:decorate="~{layout}">
+<head>
+ <title>Lịch sử mua hàng</title>
+</head>
+<body>
+<section layout:fragment="content" class="container mt-3">
+ <h1>Lịch Sử Mua Hàng</h1>
+
+ <form th:action="@{/order/history}" method="get" class="crud-section" style="max-width: 560px;">
+  <label for="customerName" class="form-label">Nhập tên khách hàng để tra cứu đơn:</label>
+  <div style="display: flex; gap: 8px;">
+   <input type="text" id="customerName" name="customerName" class="form-control" th:value="${customerName}" required>
+   <button type="submit" class="btn btn-primary">Tra cứu</button>
+  </div>
+ </form>
+
+ <div class="crud-section" style="margin-top: 16px;" th:if="${customerName != null and !#strings.isEmpty(customerName)}">
+  <h3>Kết quả cho: <span th:text="${customerName}"></span></h3>
+
+  <div th:if="${#lists.isEmpty(orders)}" class="alert alert-info">
+   Chưa có đơn hàng nào cho tên này.
+  </div>
+
+  <table th:unless="${#lists.isEmpty(orders)}" class="table table-hover">
+   <thead>
+   <tr>
+    <th>Mã đơn</th>
+    <th>Phương thức</th>
+    <th>Trạng thái</th>
+    <th>Tổng thanh toán</th>
+    <th>Chi tiết</th>
+   </tr>
+   </thead>
+   <tbody>
+   <tr th:each="order : ${orders}">
+    <td th:text="${order.id}"></td>
+    <td th:text="${order.paymentMethod}"></td>
+    <td th:text="${order.paymentStatus}"></td>
+    <td th:text="${#numbers.formatDecimal(order.finalTotal, 0, 'COMMA', 0, 'POINT')} + ' đ'"></td>
+    <td><a th:href="@{/order/receipt/{id}(id=${order.id})}" class="btn btn-success">Xem biên lai</a></td>
+   </tr>
+   </tbody>
+  </table>
+ </div>
+</section>
+</body>
+</html>

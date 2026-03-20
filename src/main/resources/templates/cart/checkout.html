@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+layout:decorate="~{layout}">
+<head>
+ <title th:text="${title} ?: 'Checkout'">Place Order</title>
+ <link rel="stylesheet"
+href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+ <link rel="stylesheet" href="/css/custom.css">
+</head>
+<body>
+<section layout:fragment="content" class="container mt-3">
+ <h1 class="mb-4">Thanh Toán Đơn Hàng</h1>
+ <div th:if="${momoError != null and !#strings.isEmpty(momoError)}" class="alert alert-danger" th:text="${momoError}"></div>
+ <div th:if="${cartItems.isEmpty()}" class="alert alert-warning">Giỏ hàng trống. Vui lòng thêm sản phẩm trước khi thanh toán.</div>
+
+ <div class="row">
+  <div class="col-md-6">
+   <div th:unless="${cartItems.isEmpty()}" class="card mb-3 checkout-summary">
+    <div class="card-header">Sản phẩm trong đơn</div>
+    <div class="card-body">
+     <div th:each="item : ${cartItems}" class="d-flex justify-content-between mb-2 align-items-center">
+      <div>
+       <div class="fw-semibold" th:text="${item.product.name}"></div>
+       <div class="text-muted small">Số lượng: <span th:text="${item.quantity}"></span></div>
+      </div>
+      <div class="text-end fw-bold" th:text="${#numbers.formatDecimal(item.product.price * item.quantity, 0, 'COMMA', 0, 'POINT')} + ' đ'"></div>
+     </div>
+    </div>
+   </div>
+
+   <div th:unless="${cartItems.isEmpty()}" class="card mb-3">
+    <div class="card-header">Tạm tính</div>
+    <div class="card-body">
+     <div class="d-flex justify-content-between"><span>Tổng tiền hàng</span><span th:text="${#numbers.formatDecimal(summary.subtotal, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span></div>
+     <div class="d-flex justify-content-between"><span>Giảm giá khuyến mãi</span><span th:text="'-' + ${#numbers.formatDecimal(summary.promotionDiscount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span></div>
+     <div class="d-flex justify-content-between"><span>Giảm voucher</span><span th:text="'-' + ${#numbers.formatDecimal(summary.voucherDiscount, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span></div>
+     <div class="d-flex justify-content-between"><span>Phí ship</span><span th:text="${#numbers.formatDecimal(summary.shippingFee, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span></div>
+     <hr>
+     <div class="d-flex justify-content-between fw-bold"><span>Tổng thanh toán</span><span th:text="${#numbers.formatDecimal(summary.finalTotal, 0, 'COMMA', 0, 'POINT')} + ' đ'"></span></div>
+     <small class="text-muted">Quy tắc ship: dưới 1.000.000 đ = 30.000 đ; từ 1.000.000 đ đến dưới 2.000.000 đ = 15.000 đ; từ 2.000.000 đ trở lên = miễn phí.</small>
+    </div>
+   </div>
+  </div>
+
+  <div class="col-md-6">
+   <div th:unless="${cartItems.isEmpty()}" class="card mb-3 checkout-form">
+    <div class="card-header">Thông tin thanh toán</div>
+    <div class="card-body">
+     <form th:action="@{/order/submit}" method="post">
+      <div class="mb-3">
+       <label for="customerName" class="form-label">Tên khách hàng:</label>
+       <input type="text" id="customerName" name="customerName" class="form-control" th:value="${customerName}" required>
+      </div>
+      <div class="mb-3">
+       <label for="customerPhone" class="form-label">Số điện thoại:</label>
+       <input type="text" id="customerPhone" name="customerPhone" class="form-control" th:value="${customerPhone}" maxlength="10" pattern="[0-9]{10}" required>
+      </div>
+      <div class="mb-3">
+       <label for="usedPoints" class="form-label">Số điểm muốn dùng:</label>
+       <input type="number" id="usedPoints" name="usedPoints" class="form-control" min="0" step="1" value="0">
+      </div>
+      <div class="mb-3">
+       <label for="voucherCode" class="form-label">Mã voucher (nếu có):</label>
+       <div class="input-group">
+        <input type="text" id="voucherCode" name="voucherCode" class="form-control" th:value="${voucherCode}" placeholder="VD: VCXXXXXXXXXX">
+        <button class="btn btn-outline-secondary" id="applyVoucherBtn" type="button">Áp dụng</button>
+       </div>
+       <small class="text-muted">Bạn có thể đổi voucher trong trang Tra cứu điểm.</small>
+      </div>
+      <div class="mb-3">
+       <label for="paymentMethod" class="form-label">Phương thức thanh toán:</label>
+       <select id="paymentMethod" name="paymentMethod" class="form-control form-select">
+        <option value="COD">Thanh toán khi nhận hàng (COD)</option>
+        <option value="MOMO">MoMo</option>
+        <option value="VNPAY">VNPay</option>
+       </select>
+      </div>
+      <div class="d-grid">
+       <button type="submit" class="btn btn-primary">Đặt hàng</button>
+      </div>
+     </form>
+    </div>
+   </div>
+  </div>
+ </div>
+
+ <div th:unless="${cartItems.isEmpty()}" class="alert alert-info">
+  Tỷ lệ quy đổi điểm: 2 điểm = 15.000 đ. Điểm cộng sau mỗi đơn = tổng số lượng sản phẩm trong đơn.
+ </div>
+
+ <div th:unless="${cartItems.isEmpty()}" class="alert alert-secondary">
+  Hệ thống tra điểm theo số điện thoại. Vui lòng nhập đúng số đã dùng ở các đơn trước.
+ </div>
+
+ <div th:if="${checkoutError != null and !#strings.isEmpty(checkoutError)}" class="alert alert-danger" th:text="${checkoutError}"></div>
+
+ <div th:unless="${cartItems.isEmpty()}" class="alert alert-dark">
+  Điểm hiện có theo số này: <strong id="availablePointsText" th:text="${summary.availablePoints}"></strong>
+ </div>
+
+ <div th:if="${summary.voucherMessage != null and !#strings.isEmpty(summary.voucherMessage)}" class="alert alert-warning" th:text="${summary.voucherMessage}"></div>
+ <div th:if="${summary.appliedVoucherCode != null and !#strings.isEmpty(summary.appliedVoucherCode)}" class="alert alert-success">
+  Da ap dung voucher: <strong th:text="${summary.appliedVoucherCode}"></strong>
+ </div>
+
+ <div th:unless="${cartItems.isEmpty()}" class="mb-3">
+  <a th:href="@{/order/checkout(customerName=${customerName},customerPhone=${customerPhone},voucherCode=${voucherCode})}" class="btn btn-outline-secondary btn-sm">Tải lại điểm theo thông tin đã nhập</a>
+ </div>
+
+ <div th:unless="${cartItems.isEmpty()}" class="alert alert-warning">
+   Với thanh toán online (MoMo/VNPay), hệ thống sẽ chuyển sang cổng thanh toán và callback về ứng dụng để tạo đơn PAID.
+ </div>
+
+ <div th:unless="${cartItems.isEmpty()}" class="card mb-3">
+  <div class="card-header">Thông tin thanh toán</div>
+  <div class="card-body">
+ <form th:action="@{/order/submit}" method="post">
+ <div class="mb-3">
+ <label for="customerName" class="form-label">Tên khách hàng:</label>
+ <input type="text" id="customerName" name="customerName" class="form-control" th:value="${customerName}" required>
+ </div>
+ <div class="mb-3">
+ <label for="customerPhone" class="form-label">Số điện thoại:</label>
+ <input type="text" id="customerPhone" name="customerPhone" class="form-control" th:value="${customerPhone}" maxlength="10" pattern="[0-9]{10}" required>
+ </div>
+ <div class="mb-3">
+  <label for="usedPoints" class="form-label">Số điểm muốn dùng:</label>
+  <input type="number" id="usedPoints" name="usedPoints" class="form-control" min="0" step="1" value="0">
+ </div>
+ <div class="mb-3">
+  <label for="voucherCode" class="form-label">Mã voucher (nếu có):</label>
+  <input type="text" id="voucherCode" name="voucherCode" class="form-control" th:value="${voucherCode}" placeholder="VD: VCXXXXXXXXXX">
+  <small class="text-muted">Bạn có thể đổi voucher trong trang Tra cứu điểm.</small>
+ </div>
+ <div class="mb-3">
+  <label for="paymentMethod" class="form-label">Phương thức thanh toán:</label>
+  <select id="paymentMethod" name="paymentMethod" class="form-control">
+   <option value="COD">Thanh toán khi nhận hàng (COD)</option>
+   <option value="MOMO">MoMo</option>
+    <option value="VNPAY">VNPay</option>
+  </select>
+ </div>
+ <div class="mb-3">
+  <a class="btn btn-outline-primary btn-sm" id="applyVoucherBtn" href="#">Áp dụng voucher để xem tạm tính</a>
+ </div>
+ <button type="submit" class="btn btn-primary">Đặt hàng</button>
+ </form>
+  </div>
+ </div>
+
+ <script>
+  (function () {
+   const customerPhoneInput = document.getElementById('customerPhone');
+    const customerNameInput = document.getElementById('customerName');
+    const voucherInput = document.getElementById('voucherCode');
+    const applyVoucherBtn = document.getElementById('applyVoucherBtn');
+   const pointsText = document.getElementById('availablePointsText');
+   const usedPointsInput = document.getElementById('usedPoints');
+   if (!customerPhoneInput || !pointsText) {
+    return;
+   }
+
+   let debounceTimer;
+   const loadPoints = async () => {
+    const customerPhone = customerPhoneInput.value.trim();
+    if (!/^\d{10}$/.test(customerPhone)) {
+     pointsText.textContent = '0';
+     if (usedPointsInput) {
+      usedPointsInput.max = '0';
+      usedPointsInput.value = '0';
+     }
+     return;
+    }
+    try {
+     const response = await fetch('/order/points?customerPhone=' + encodeURIComponent(customerPhone));
+     if (!response.ok) {
+      return;
+     }
+     const data = await response.json();
+     const points = Number(data.points || 0);
+     pointsText.textContent = String(points);
+     if (usedPointsInput) {
+      usedPointsInput.max = String(points);
+      if (Number(usedPointsInput.value || 0) > points) {
+       usedPointsInput.value = String(points);
+      }
+     }
+    } catch (e) {
+     // Keep current value on transient network issues.
+    }
+   };
+
+  customerPhoneInput.addEventListener('input', function () {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(loadPoints, 350);
+   });
+
+  customerPhoneInput.addEventListener('blur', loadPoints);
+
+    if (applyVoucherBtn) {
+     applyVoucherBtn.addEventListener('click', function (event) {
+      event.preventDefault();
+      const customerName = encodeURIComponent((customerNameInput.value || '').trim());
+      const customerPhone = encodeURIComponent((customerPhoneInput.value || '').trim());
+      const voucherCode = encodeURIComponent((voucherInput.value || '').trim());
+      window.location.href = '/order/checkout?customerName=' + customerName + '&customerPhone=' + customerPhone + '&voucherCode=' + voucherCode;
+     });
+    }
+  })();
+ </script>
+</section>
+</body>
+</html>
